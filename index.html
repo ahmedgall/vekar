@@ -3,56 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>تسجيل حساب جديد</title>
+  <title>تسجيل الدخول / إنشاء حساب</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-green-50 flex items-center justify-center h-screen font-sans">
+<body class="bg-green-50 flex items-center justify-center min-h-screen font-sans">
 
-  <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md border border-green-400">
-    <h2 class="text-2xl text-green-700 font-bold mb-6 text-center">تسجيل الدخول / إنشاء حساب</h2>
+  <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md space-y-6">
+    <h2 class="text-2xl font-bold text-center text-green-700">مرحبًا بك</h2>
 
-    <label class="block mb-2 text-sm text-black">اسم المستخدم</label>
-    <input id="username" type="text" class="w-full mb-4 px-4 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="أدخل اسمك">
+    <!-- Tabs -->
+    <div class="flex justify-center space-x-4 rtl:space-x-reverse">
+      <button id="loginTab" class="px-4 py-2 bg-green-500 text-white rounded">تسجيل الدخول</button>
+      <button id="signupTab" class="px-4 py-2 bg-gray-200 text-green-700 rounded">إنشاء حساب</button>
+    </div>
 
-    <label class="block mb-2 text-sm text-black">رقم الهاتف</label>
-    <input id="phone" type="tel" class="w-full mb-4 px-4 py-2 border border-green-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="مثال: 01012345678">
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-4">
+      <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded" required />
+      <input id="loginPassword" type="password" placeholder="كلمة المرور" class="w-full p-2 border rounded" required />
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded">تسجيل الدخول</button>
+    </form>
 
-    <button onclick="login()" class="bg-green-600 text-white w-full py-2 rounded-md hover:bg-green-700 transition">دخول</button>
+    <!-- Signup Form -->
+    <form id="signupForm" class="space-y-4 hidden">
+      <input id="signupEmail" type="email" placeholder="البريد الإلكتروني" class="w-full p-2 border rounded" required />
+      <input id="signupPassword" type="password" placeholder="كلمة المرور" class="w-full p-2 border rounded" required />
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded">إنشاء الحساب</button>
+    </form>
 
-    <p id="error" class="text-red-600 text-sm mt-2 hidden">يرجى ملء جميع الحقول</p>
+    <div id="message" class="text-center text-sm text-red-500"></div>
   </div>
 
-<script>
-  async function login() {
-    const username = document.getElementById("username").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const error = document.getElementById("error");
+  <script>
+    const loginTab = document.getElementById('loginTab');
+    const signupTab = document.getElementById('signupTab');
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    const message = document.getElementById('message');
 
-    if (!username || !phone) {
-      error.classList.remove("hidden");
-      return;
-    }
+    loginTab.onclick = () => {
+      loginForm.classList.remove('hidden');
+      signupForm.classList.add('hidden');
+      loginTab.classList.replace('bg-gray-200', 'bg-green-500');
+      loginTab.classList.replace('text-green-700', 'text-white');
+      signupTab.classList.replace('bg-green-500', 'bg-gray-200');
+      signupTab.classList.replace('text-white', 'text-green-700');
+      message.textContent = '';
+    };
 
-    try {
-      const res = await fetch("https://c1f0c34f-354a-4ca3-85b0-47e26ce4e29b-00-jk7w5hcd28p.spock.replit.dev/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, phone }),
-      });
+    signupTab.onclick = () => {
+      signupForm.classList.remove('hidden');
+      loginForm.classList.add('hidden');
+      signupTab.classList.replace('bg-gray-200', 'bg-green-500');
+      signupTab.classList.replace('text-green-700', 'text-white');
+      loginTab.classList.replace('bg-green-500', 'bg-gray-200');
+      loginTab.classList.replace('text-white', 'text-green-700');
+      message.textContent = '';
+    };
 
-      const data = await res.json();
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
-      if (data.success) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        window.location.href = "chats.html"; // ✅ لو عندك صفحة شات
-      } else {
-        alert("❌ فشل في تسجيل الدخول");
+      try {
+        const res = await fetch("https://c1f0c34f-354a-4ca3-85b0-47e26ce4e29b-00-jk7w5hcd28p.spock.replit.dev/login", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          message.textContent = "تم تسجيل الدخول بنجاح ✅";
+          message.classList.replace("text-red-500", "text-green-600");
+          setTimeout(() => {
+            window.location.href = "cha.html";
+          }, 1000);
+        } else {
+          message.textContent = data.error || "فشل تسجيل الدخول ❌";
+        }
+      } catch (err) {
+        message.textContent = "خطأ في الاتصال بالخادم.";
       }
-    } catch (err) {
-      alert("⚠️ حدث خطأ أثناء الاتصال بالسيرفر");
-    }
-  }
-</script>
+    };
 
+    signupForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+
+      try {
+        const res = await fetch("https://c1f0c34f-354a-4ca3-85b0-47e26ce4e29b-00-jk7w5hcd28p.spock.replit.dev/signup", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          message.textContent = "تم إنشاء الحساب بنجاح 🎉";
+          message.classList.replace("text-red-500", "text-green-600");
+          setTimeout(() => {
+            window.location.href = "cha.html";
+          }, 1000);
+        } else {
+          message.textContent = data.error || "فشل إنشاء الحساب ❌";
+        }
+      } catch (err) {
+        message.textContent = "خطأ في الاتصال بالخادم.";
+      }
+    };
+  </script>
 </body>
 </html>
